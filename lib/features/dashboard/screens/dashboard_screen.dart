@@ -1,58 +1,95 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../auth/screens/profile_edit_screen.dart';
-import '../../../shared/widgets/profile_avatar.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(
-            color: Color(0xFF212121),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: Color(0xFF212121),
-            ),
-            onPressed: () {
-              // Handle notifications
-            },
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.settings_outlined,
-              color: Color(0xFF212121),
-            ),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const ProfileEditScreen(),
-                ),
-              );
-            },
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: _selectedIndex == 0
+          ? const DashboardHomeTab()
+          : _selectedIndex == 1
+              ? const Center(child: Text('Kelas Saya', style: TextStyle(fontSize: 24)))
+              : const Center(child: Text('Notifikasi', style: TextStyle(fontSize: 24))),
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
-      body: const DashboardTab(),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(Icons.home_rounded, 'Home', 0),
+              _buildNavItem(Icons.class_rounded, 'Kelas Saya', 1),
+              _buildNavItem(Icons.notifications_rounded, 'Notifikasi', 2),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, int index) {
+    final isSelected = _selectedIndex == index;
+    return InkWell(
+      onTap: () => setState(() => _selectedIndex = index),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFF9800).withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFFFF9800) : const Color(0xFF9E9E9E),
+              size: 26,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? const Color(0xFFFF9800) : const Color(0xFF9E9E9E),
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class DashboardTab extends StatelessWidget {
-  const DashboardTab({super.key});
+class DashboardHomeTab extends StatelessWidget {
+  const DashboardHomeTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -63,13 +100,13 @@ class DashboardTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeaderSection(context, user),
-          _buildProgressSection(context),
-          _buildCoursesSection(context),
-          _buildAssignmentsSection(context),
-          _buildNotificationsSection(context),
-          _buildAnnouncementsSection(context),
-          _buildQuickActionsSection(context),
           const SizedBox(height: 20),
+          _buildUpcomingAssignmentSection(context),
+          const SizedBox(height: 20),
+          _buildAnnouncementSection(context),
+          const SizedBox(height: 20),
+          _buildClassProgressSection(context),
+          const SizedBox(height: 80),
         ],
       ),
     );
@@ -80,544 +117,80 @@ class DashboardTab extends StatelessWidget {
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
             Color(0xFFFF9800),
-            Color(0xFFFFB74D),
+            Color(0xFFFFA726),
           ],
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            ProfileAvatar(
-              imageUrl: user?.profilePhotoUrl,
-              name: user?.name,
-              size: 60,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Selamat Datang, ${user?.name ?? 'Mahasiswa'}!',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    user?.role.displayName ?? 'Mahasiswa',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
         ),
       ),
-    );
-  }
-
-  Widget _buildProgressSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Progress Belajar',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildProgressCard(
-                  'Total Progress',
-                  68,
-                  Icons.school,
-                  const Color(0xFFFF9800),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildProgressCard(
-                  'Kelas Selesai',
-                  3,
-                  Icons.check_circle,
-                  const Color(0xFF4CAF50),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildProgressCard(
-                  'Sertifikat',
-                  1,
-                  Icons.card_membership,
-                  const Color(0xFFFFC107),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressCard(String title, int value, IconData icon, Color color) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value.toString(),
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF757575),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCoursesSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Kelas yang Diikuti',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF212121),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Navigate to all courses
-                },
-                child: const Text(
-                  'Lihat Semua',
-                  style: TextStyle(
-                    color: Color(0xFFFF9800),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 140,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: 4,
-              itemBuilder: (context, index) {
-                return _buildCourseCard(index);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCourseCard(int index) {
-    final courses = [
-      {'name': 'Matematika Dasar', 'progress': 75, 'status': 'Berlangsung'},
-      {'name': 'Fisika I', 'progress': 45, 'status': 'Berlangsung'},
-      {'name': 'Kimia Organik', 'progress': 90, 'status': 'Hampir Selesai'},
-      {'name': 'Biologi Sel', 'progress': 100, 'status': 'Selesai'},
-    ];
-    
-    final course = courses[index];
-    
-    return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            course['name'] as String,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
-            value: (course['progress'] as int) / 100,
-            backgroundColor: const Color(0xFFE0E0E0),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF9800)),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${course['progress']}%',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF757575),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (course['status'] as String) == 'Selesai' 
-                      ? const Color(0xFFE8F5E8)
-                      : (course['status'] as String) == 'Hampir Selesai'
-                      ? const Color(0xFFFFF3E0)
-                      : const Color(0xFFE3F2FD),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  course['status'] as String,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: (course['status'] as String) == 'Selesai'
-                        ? const Color(0xFF4CAF50)
-                        : (course['status'] as String) == 'Hampir Selesai'
-                        ? const Color(0xFFFF9800)
-                        : const Color(0xFF2196F3),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAssignmentsSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Tugas Mendatang',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...List.generate(3, (index) => _buildAssignmentCard(index)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAssignmentCard(int index) {
-    final assignments = [
-      {'title': 'Tugas UTS Matematika', 'deadline': '2 hari lagi', 'urgent': true, 'course': 'Matematika Dasar'},
-      {'title': 'Presentasi Proyek Fisika', 'deadline': '5 hari lagi', 'urgent': false, 'course': 'Fisika I'},
-      {'title': 'Kuis Online Kimia', 'deadline': '1 minggu lagi', 'urgent': false, 'course': 'Kimia Organik'},
-    ];
-    
-    final assignment = assignments[index];
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFF9800).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(
-            Icons.assignment,
-            color: Color(0xFFFF9800),
-            size: 20,
-          ),
-        ),
-        title: Text(
-          assignment['title'] as String,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF212121),
-          ),
-        ),
-        subtitle: Text(
-          assignment['course'] as String,
-          style: const TextStyle(
-            color: Color(0xFF757575),
-            fontSize: 12,
-          ),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              assignment['deadline'] as String,
-              style: TextStyle(
-                color: (assignment['urgent'] as bool) 
-                    ? const Color(0xFFF44336)
-                    : const Color(0xFF757575),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (assignment['urgent'] as bool)
-              Container(
-                margin: const EdgeInsets.only(top: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF44336).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'URGENT',
-                  style: TextStyle(
-                    color: Color(0xFFF44336),
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationsSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Notifikasi Terbaru',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...List.generate(3, (index) => _buildNotificationCard(index)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotificationCard(int index) {
-    final notifications = [
-      {
-        'title': 'Nilai Ujian Tengah Semester',
-        'subtitle': 'Matematika Dasar - 85 poin',
-        'icon': Icons.grade,
-        'color': const Color(0xFF4CAF50),
-        'time': '2 jam lalu'
-      },
-      {
-        'title': 'Materi Baru Tersedia',
-        'subtitle': 'Fisika I - Bab 5: Getaran',
-        'icon': Icons.book,
-        'color': const Color(0xFF2196F3),
-        'time': '5 jam lalu'
-      },
-      {
-        'title': 'Pengumuman Libur Nasional',
-        'subtitle': 'Tidak ada kelas pada 17 Agustus',
-        'icon': Icons.campaign,
-        'color': const Color(0xFFFF9800),
-        'time': '1 hari lalu'
-      },
-    ];
-    
-    final notification = notifications[index];
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: (notification['color'] as Color).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            notification['icon'] as IconData,
-            color: notification['color'] as Color,
-            size: 20,
-          ),
-        ),
-        title: Text(
-          notification['title'] as String,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF212121),
-            fontSize: 14,
-          ),
-        ),
-        subtitle: Text(
-          '${notification['subtitle'] as String} • ${notification['time'] as String}',
-          style: const TextStyle(
-            color: Color(0xFF757575),
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnnouncementsSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFFFFF9C4),
-              Color(0xFFFFF59D),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+      child: SafeArea(
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFC107).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.campaign,
-                  color: Color(0xFFFF8F00),
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Pendaftaran Semester Baru',
-                      style: TextStyle(
-                        fontSize: 16,
+                      'Hallo, ${user?.name ?? 'Mahasiswa'}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF212121),
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Pendaftaran untuk semester ganjil 2024 telah dibuka hingga 31 Juli',
+                      'Selamat datang kembali!',
                       style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF757575),
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF4CAF50),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      user?.role.displayName ?? 'Mahasiswa',
+                      style: const TextStyle(
+                        color: Color(0xFFFF6F00),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -630,109 +203,357 @@ class DashboardTab extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActionsSection(BuildContext context) {
+  Widget _buildUpcomingAssignmentSection(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Menu Utama',
+            'Tugas Yang Akan Datang',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Color(0xFF212121),
+              letterSpacing: 0.3,
             ),
           ),
           const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.5,
-            children: [
-              _buildActionCard(
-                'Kelas',
-                Icons.book,
-                const Color(0xFF2196F3),
-                () {
-                  // Navigate to courses
-                },
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFF9800),
+                  Color(0xFFFFA726),
+                ],
               ),
-              _buildActionCard(
-                'Tugas',
-                Icons.assignment,
-                const Color(0xFFFF9800),
-                () {
-                  // Navigate to assignments
-                },
-              ),
-              _buildActionCard(
-                'Kuis',
-                Icons.quiz,
-                const Color(0xFF9C27B0),
-                () {
-                  // Navigate to quiz
-                },
-              ),
-              _buildActionCard(
-                'Profil',
-                Icons.person,
-                const Color(0xFF4CAF50),
-                () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const ProfileEditScreen(),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF9800).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.assignment_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Desain Antarmuka & Pengalaman Pengguna',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tugas Perancangan Prototype',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.95),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time_rounded,
+                              color: Colors.white.withOpacity(0.9),
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '25 Desember 2024, 23:59 WIB',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFFFF6F00),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Lihat Detail',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionCard(String title, IconData icon, Color color, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+  Widget _buildAnnouncementSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Pengumuman Terakhir',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF212121),
+              letterSpacing: 0.3,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFFF3E0),
+                  Color(0xFFFFE0B2),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.construction_rounded,
+                          size: 64,
+                          color: const Color(0xFFFF6F00).withOpacity(0.8),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Maintenance LMS',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF212121),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Sistem akan menjalani pemeliharaan rutin\npada 26 Desember 2024, pukul 01:00 - 05:00 WIB',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: const Color(0xFF212121).withOpacity(0.7),
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Mohon maaf atas ketidaknyamanannya',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: const Color(0xFF212121).withOpacity(0.6),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClassProgressSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Progres Kelas',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF212121),
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildClassCard(
+            'Desain Antarmuka & Pengalaman Pengguna',
+            'Semester 5 • 3 SKS',
+            Icons.palette_rounded,
+            75,
+          ),
+          const SizedBox(height: 12),
+          _buildClassCard(
+            'Pemrograman Mobile',
+            'Semester 5 • 4 SKS',
+            Icons.phone_android_rounded,
+            60,
+          ),
+          const SizedBox(height: 12),
+          _buildClassCard(
+            'Basis Data Lanjut',
+            'Semester 5 • 3 SKS',
+            Icons.storage_rounded,
+            85,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClassCard(String title, String subtitle, IconData icon, int progress) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFFF9800).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
-                color: color,
-                size: 32,
+                color: const Color(0xFFFF9800),
+                size: 28,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF212121),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF212121),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: const Color(0xFF757575).withOpacity(0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress / 100,
+                            backgroundColor: const Color(0xFFE0E0E0),
+                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF9800)),
+                            minHeight: 6,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '$progress%',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFF9800),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
