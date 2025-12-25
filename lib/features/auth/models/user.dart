@@ -7,6 +7,10 @@ class User {
   final String? profilePhotoUrl;
   final String? bio;
   final UserRole role;
+  final String? programStudi;
+  final String? fakultas;
+  final DateTime? firstAccess;
+  final DateTime? lastAccess;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -17,6 +21,10 @@ class User {
     this.profilePhotoUrl,
     this.bio,
     required this.role,
+    this.programStudi,
+    this.fakultas,
+    this.firstAccess,
+    this.lastAccess,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -28,6 +36,10 @@ class User {
     String? profilePhotoUrl,
     String? bio,
     UserRole? role,
+    String? programStudi,
+    String? fakultas,
+    DateTime? firstAccess,
+    DateTime? lastAccess,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -38,6 +50,10 @@ class User {
       profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       bio: bio ?? this.bio,
       role: role ?? this.role,
+      programStudi: programStudi ?? this.programStudi,
+      fakultas: fakultas ?? this.fakultas,
+      firstAccess: firstAccess ?? this.firstAccess,
+      lastAccess: lastAccess ?? this.lastAccess,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -51,6 +67,10 @@ class User {
       'profilePhotoUrl': profilePhotoUrl,
       'bio': bio,
       'role': role.value,
+      'programStudi': programStudi,
+      'fakultas': fakultas,
+      'firstAccess': firstAccess?.toIso8601String(),
+      'lastAccess': lastAccess?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -64,6 +84,10 @@ class User {
       profilePhotoUrl: json['profilePhotoUrl'],
       bio: json['bio'],
       role: UserRole.fromString(json['role'] ?? 'mahasiswa'),
+      programStudi: json['programStudi'],
+      fakultas: json['fakultas'],
+      firstAccess: json['firstAccess'] != null ? DateTime.parse(json['firstAccess']) : null,
+      lastAccess: json['lastAccess'] != null ? DateTime.parse(json['lastAccess']) : null,
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
     );

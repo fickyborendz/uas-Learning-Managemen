@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../auth/screens/notification_screen.dart';
+import '../../auth/screens/profile_screen.dart';
+import '../../class/screens/class_materials_screen.dart';
+import '../../class/data/class_data.dart';
+import '../../class/models/class_model.dart';
+
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -20,7 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? const DashboardHomeTab()
           : _selectedIndex == 1
               ? const Center(child: Text('Kelas Saya', style: TextStyle(fontSize: 24)))
-              : const Center(child: Text('Notifikasi', style: TextStyle(fontSize: 24))),
+              : const NotificationScreen(),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
@@ -185,12 +191,20 @@ class DashboardHomeTab extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      user?.role.displayName ?? 'Mahasiswa',
-                      style: const TextStyle(
-                        color: Color(0xFFFF6F00),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
+                        );
+                      },
+                      child: Text(
+                        user?.role.displayName ?? 'Mahasiswa',
+                        style: const TextStyle(
+                          color: Color(0xFFFF6F00),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -453,110 +467,107 @@ class DashboardHomeTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _buildClassCard(
-            'Desain Antarmuka & Pengalaman Pengguna',
-            'Semester 5 • 3 SKS',
-            Icons.palette_rounded,
-            75,
-          ),
-          const SizedBox(height: 12),
-          _buildClassCard(
-            'Pemrograman Mobile',
-            'Semester 5 • 4 SKS',
-            Icons.phone_android_rounded,
-            60,
-          ),
-          const SizedBox(height: 12),
-          _buildClassCard(
-            'Basis Data Lanjut',
-            'Semester 5 • 3 SKS',
-            Icons.storage_rounded,
-            85,
-          ),
+          ...sampleClasses.map((classData) => Column(
+            children: [
+              _buildClassCard(context, classData),
+              const SizedBox(height: 12),
+            ],
+          )),
         ],
       ),
     );
   }
 
-  Widget _buildClassCard(String title, String subtitle, IconData icon, int progress) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+  Widget _buildClassCard(BuildContext context, ClassModel classData) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ClassMaterialsScreen(classData: classData),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF9800).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                icon,
-                color: const Color(0xFFFF9800),
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF212121),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: const Color(0xFF757575).withOpacity(0.9),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: progress / 100,
-                            backgroundColor: const Color(0xFFE0E0E0),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF9800)),
-                            minHeight: 6,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '$progress%',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFF9800),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9800).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  classData.icon,
+                  color: const Color(0xFFFF9800),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      classData.title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF212121),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      classData.subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: const Color(0xFF757575).withOpacity(0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: classData.progress / 100,
+                              backgroundColor: const Color(0xFFE0E0E0),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF9800)),
+                              minHeight: 6,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '${classData.progress}%',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFF9800),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
